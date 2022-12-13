@@ -1,0 +1,67 @@
+---
+title: "PT"
+author: "Maksym Hudymenko"
+date: "`r Sys.Date()`"
+output: html_document
+---
+Content
+
+Best Selling Music Artists of All Time
+
+About Dataset
+The following list of best-selling music artists includes those music acts from the 20th century to the present with claims of 75 million or more record sales worldwide.
+
+COLUMN DESCRIPTION
+'Artist' : Name of the artist
+'Country' : Country from where the artist is from
+'period_active' : Time when the artists made their music
+'Year' : Release year of their first chartered record
+'Genre' : Genre of the artist's music
+'TCU' : Total Certified Units
+'Sales' : Claimed sales of the records
+FILE INFORMATION
+File: 'best _selling _artists.csv'
+The file contains the following columns:
+
+'Artist' : Name of the artist
+'Country' : Country from where the artist is from
+'period_active' : Time when the artists made their music
+'Year' : Release year of their first chartered record
+'Genre' : Genre of the artist's music
+'TCU' : Total Certified Units
+'Sales' : Claimed sales of the records
+
+https://www.kaggle.com/datasets/kabhishm/best-selling-music-artists-of-all-time?resource=download
+
+
+```{r}
+setwd("C:/Users/USER/Desktop/DataProcessingLabs/PT")
+data <- read.csv("best_selling_artists.csv")
+head(data)
+```
+```{r}
+tail(data)
+```
+```{r}
+subset(data, Country == "Barbados")
+```
+
+```{r}
+mean(data$Year)
+```
+
+```{r}
+sd(data$Year)
+```
+
+```{r}
+var(data$Year)
+```
+
+```{r}
+plot(data$Year, main = "Main Plot")
+hist(data$Year, main = "Histogram")
+h1 <- hist(data$Year, main = "Histogram & Polygon")
+lines(h1$counts ~ h1$mids, col = "red")
+boxplot(data$Year, main = "Boxplot")
+```
