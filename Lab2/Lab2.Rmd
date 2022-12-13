@@ -1,0 +1,107 @@
+---
+title: "Lab_2"
+author: "Maksym Hudymenko"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# Preparation. 
+Function load_files.
+```{r}
+load_files <- function(directory, ids) {
+  wd <- getwd()
+  files <- dir(directory, pattern = "\\.csv", full.names = FALSE)
+  filtered_files <- files[as.numeric(gsub(".csv", "", files)) %in% ids]
+  setwd(directory)
+  data <- do.call(rbind, lapply(filtered_files, read.csv))
+  data <- na.omit(data)
+  setwd(wd)
+  return (data)
+}
+```
+
+# Part 1
+Write a function named pollutantmean that calculates the mean of a pollutant (sulfate or nitrate) across a specified list of monitors. The function pollutantmean takes three arguments: directory, pollutant, and id. Given a vector monitor ID numbers, pollutantmean reads that monitors’ particulate matter data from the directory specified in the directory argument and returns the mean of the pollutant across all of the monitors, ignoring any missing values coded as NA.
+
+```{r}
+pollutantmean <- function(directory, pollutant, ids) {
+  data <- load_files(directory, ids)
+  return (mean(data[,pollutant]))
+}
+```
+
+You can see some example output from this function below.
+
+```{r}
+pollutantmean("specdata", "sulfate", 1:10)
+```
+
+```{r}
+pollutantmean("specdata", "nitrate", 70:72)
+```
+
+```{r}
+pollutantmean("specdata", "nitrate", 23)
+```
+
+# Part 2
+Write a function named complete that reads a directory full of files and reports the number of completely observed cases in each data file. The function should return a data frame where the first column is the name of the file and the second column is the number of complete cases.
+
+```{r}
+complete <- function(directory, ids) {
+  data <- load_files(directory, ids)
+  return (aggregate(data$ID, list(data$ID), length))
+}
+```
+
+You can see some example output from this function below.
+
+
+```{r}
+complete("specdata", 1)
+```
+
+```{r}
+complete("specdata", c(2, 4, 8, 10, 12))
+```
+
+```{r}
+complete("specdata", 30:25)
+```
+
+# Part 3
+Write a function named corr that takes a directory of data files and a threshold for complete cases and calculates the correlation between sulfate and nitrate for monitor locations where the number of completely observed cases (on all variables) is greater than the threshold. The function should return a vector of correlations for the monitors that meet the threshold requirement. If no monitors meet the threshold requirement, then the function should return a numeric vector of length 0. For this function you will need to use the ‘cor’ function in R which calculates the correlation between two vectors.
+
+```{r}
+corr <- function(directory, threshold) {
+  complete_data <- complete(directory, 1:1e6)
+  complete_above_threshold <- subset(complete_data, complete_data[2] >= threshold)
+  data <- load_files(directory, complete_above_threshold$Group.1)
+  if (is.null(data)) return (vector(mode="numeric", length=0))
+  data <- do.call(rbind, lapply(
+      split(data, data$ID), 
+      function(x) cor(x$nitrate, x$sulfate)
+  ))
+  return (data)
+}
+```
+
+You can see some example output from this function below.
+
+```{r}
+cr <- corr("specdata", 150)
+head(cr)
+summary(cr)
+```
+
+```{r}
+cr <- corr("specdata", 400)
+head(cr)
+summary(cr)
+```
+
+```{r}
+cr <- corr("specdata", 5000)
+summary(cr)
+length(cr)
+```
