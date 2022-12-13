@@ -1,0 +1,52 @@
+setwd("C:/Users/USER/Desktop/DataProcessingLabs/Lab5")
+NEI <- readRDS("summarySCC_PM25.rds")
+SCC <- readRDS("Source_Classification_Code.rds")
+
+# 1. Have total emissions from PM2.5 decreased in the United States from 1999 to 2008? Make a plot showing the total PM2.5 emission from all sources for each of the years 1999, 2002, 2005, and 2008.
+NEI_1 <- NEI %>% group_by(year) %>% summarise(total_emissions = sum(Emissions))
+barplot(NEI_1$total_emissions ~ NEI_1$year, main="Total emissions", xlab="Year", ylab="Emissions, tons")
+
+# Answer: Yes, they have.
+
+# 2. Have total emissions from PM2.5 decreased in the Baltimore City, Maryland (fips == "24510") from 1999 to 2008?
+NEI_2 <- NEI[NEI$fips == "24510",] %>% group_by(year) %>% summarise(total_emissions = sum(Emissions))
+barplot(NEI_2$total_emissions ~ NEI_2$year, main="Total emissions in the Baltimore City, Maryland", 
+        xlab="Year", ylab="Emissions, tons")
+
+# Answer: Yes, they have.
+
+# 3. Of the four types of sources indicated by the type (point, nonpoint, onroad, nonroad) variable, which of these four sources have seen decreases in emissions from 1999–2008 for Baltimore City? Which have seen increases in emissions from 1999–2008?
+NEI_3 <- NEI[NEI$fips == "24510",] %>% group_by(year, type) %>% summarise(total_emissions = sum(Emissions))
+barplot(NEI_3$total_emissions ~ NEI_3$year + NEI_3$type, main="Total emissions by source type in the Baltimore City, Maryland", 
+        xlab="Year",
+        ylab="Emissions, tons",
+        col=c("darkblue","red", "green", "yellow"), legend = unique(NEI_3$year), beside=TRUE)
+
+# Answer: Nonroad, nonpoint, onroad have decreased. Point have increased.
+
+#  4. Across the United States, how have emissions from coal combustion-related sources changed from 1999–2008?
+coal_sources <- SCC[grepl("coal", SCC$Short.Name),]
+NEI_4 <- NEI[NEI$SCC %in% coal_sources$SCC,] %>% group_by(year) %>% summarise(total_emissions = sum(Emissions))
+barplot(NEI_4$total_emissions ~ NEI_4$year, main="Total emissions from coal combustion-related sources", 
+        xlab="Year", ylab="Emissions, tons")
+
+# Answer: Decreased.
+
+#  5. How have emissions from motor vehicle sources changed from 1999–2008 in Baltimore City (EI.Sector starts from “Mobile”)?
+motor_vehicle_sources <- SCC[startsWith(as.character(SCC$EI.Sector), "Mobile"),]
+NEI_5 <- NEI[NEI$SCC %in% motor_vehicle_sources$SCC & NEI$fips == "24510",] %>% group_by(year) %>% summarise(total_emissions = sum(Emissions))
+barplot(NEI_5$total_emissions ~ NEI_5$year, main="Total emissions from motor vehicle sources in the Baltimore City, Maryland", 
+        xlab="Year", ylab="Emissions, tons")
+
+# Answer: Decreased.
+
+#  6. Compare emissions from motor vehicle sources in Baltimore City with emissions from motor vehicle sources in Los Angeles County, California (fips == "06037"). Which city has seen greater changes over time in motor vehicle emissions?
+motor_vehicle_sources <- SCC[startsWith(as.character(SCC$EI.Sector), "Mobile"),]
+NEI_6 <- NEI[NEI$SCC %in% motor_vehicle_sources$SCC & NEI$fips %in% c("24510", "06037"),] %>% group_by(year, fips) %>% summarise(total_emissions = sum(Emissions))
+NEI_6
+barplot(NEI_6$total_emissions ~ NEI_6$year + NEI_6$fips, main="Total emissions from motor vehicle sources in the Baltimore City, Maryland vs Los Angeles County, California", 
+        xlab="Year", ylab="Emissions, tons",
+        col=c("darkblue","red"), legend = unique(NEI_3$fips), beside=TRUE)
+
+# Answer: Los Angeles County, California slightly increased. Baltimore City, Maryland - decreased.
+
